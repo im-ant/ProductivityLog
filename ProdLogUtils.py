@@ -36,7 +36,7 @@ Input:  wordFreqDict - a dictionary mapping word - list of counts
 Output: wordFreqDict - dictionary with aggregate word counts
 """
 def aggregate_word_freq(wordFreqDict, listOfWords, labelIdx, n_categories):
-    #TODO: add ability to have multiple different labelIdx
+    #TODO: add ability to have multiple different labelIdx?
     for word in listOfWords:
         #if dictionary contains key, aggregate
         if word in wordFreqDict:
@@ -66,12 +66,12 @@ def naiveBayesianClassifier(wordFreqDict, newWordList, n_categories):
 
     #Pre-process to sum the total number of words in each category TODO: move of funciton if too expensive
     totalCountPerCat = [0]*n_categories
-    for key in wordFreqDict:
-        for ithCat in range(0,n_categories):
-            totalCountPerCat[ithCat] = wordFreqDict[key][ithCat]
+    for ithCat in range(0,n_categories):
+        for key in wordFreqDict:
+            totalCountPerCat[ithCat] += wordFreqDict[key][ithCat]
 
     #Create flat prior probabilities for each categories
-    probCat = [1/n_categories] * n_categories
+    probCat = [1.0/n_categories] * n_categories
 
     #Iterate over each word and update the probabilities
     for word in newWordList:
@@ -80,16 +80,16 @@ def naiveBayesianClassifier(wordFreqDict, newWordList, n_categories):
             continue
 
         #Probability of word given each category
-        p_wordGivenCat = [0] * n_categories #pre-initialize
+        p_wordGivenCat = [0.0] * n_categories #pre-initialize
         for ithCat in range(0,n_categories):
-            p_wordGivenCat[ithCat] = wordFreqDict[word][ithCat] / totalCountPerCat[ithCat] + dampFactor
+            p_wordGivenCat[ithCat] = wordFreqDict[word][ithCat] / (totalCountPerCat[ithCat]+np.finfo(float).eps) + dampFactor
 
         #Marginal probability of word
-        p_word = sum( wordFreqDict[word] )
+        p_word = np.sum( wordFreqDict[word] )
 
         #update the probability
         for ithCat in range(0,n_categories):
-            probCat *= ( p_wordGivenCat[ithCat] / p_word )
+            probCat[ithCat] = probCat[ithCat] * np.divide( p_wordGivenCat[ithCat],  p_word)
 
     #Normalize probabilities and return
     normed_probCat = probCat / np.sum(probCat)
