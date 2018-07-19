@@ -12,7 +12,10 @@ RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Related/daily_logs'
 #Path to directory containing labelled log data
 LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
 
-#Label category mapping {index - label name}
+#Name of the temporary file generated during auto-classification
+TEMP_LAB_FILE_NAME = "tempLabelledFile_randomNum31415926.tsv"
+
+#Label category mapping {index is array index - label name}
 LABELS = ['not working', 'light work', 'intensive work']
 
 #Column index which contains the activity (count from 0)
@@ -61,7 +64,7 @@ def classifyRawFile(raw_file_path, out_labelled_file_path):
     inHeader = next(tsvRawReader, None)
 
     #Open output file and write header
-    print('Opening file for output at: ' + out_labelled_file_path)
+    print('Opening raw log file at: ' + raw_file_path)
     tsvOutFile = open(out_labelled_file_path, 'w')
     tsvWriter = csv.writer(tsvOutFile, delimiter='\t')
     outHeader = inHeader + ["Label"]
@@ -90,34 +93,43 @@ def classifyRawFile(raw_file_path, out_labelled_file_path):
 # ===
 
 #Read all the labelled data to generate a work frequency bank (prior knowledge)
+print("Generating knowledge bank...")
 for labFilePath in lab_filePaths:
     readLabelledFile_2_wordFreqDict(labFilePath)
     readLabelledFilePaths.add(labFilePath)
 
 
 #Read the raw files, automatically classify and indicate to user
+print("Starting file classification pipeline...\n")
 for rawFilePath in raw_filePaths:
-    #Create labelled log file name
+    #Create final labelled log file name
     labFileName = "labelled_" + rawFilePath.split('/')[-1]
     labFilePath = os.path.join(LABELLED_LOG_DIR_PATH,labFileName)
-    #Skip if the labelled file is already created, skip
+    #Skip this raw file if it has previously been labelled
     if labFilePath in readLabelledFilePaths:
         continue
 
-    #Automatically classify file and write
-    classifyRawFile(rawFilePath, labFilePath)
-    #TODO: use a intermediate temp file instaed?
-    #TODO overall idea is don't create the final labelled file unless i confirm it is correct
-    #TODO: July 15, this is the next step, as well as more testing to make sure it works
+    #Create a temporary path for the automatically created output
+    tempLabFilePath = os.path.join(LABELLED_LOG_DIR_PATH, TEMP_LAB_FILE_NAME)
 
-    #Check if the label are correct, if not, manually fix
-    keyboard_in = input('Labels correct? [y/n]: ')
+    #Automatically classify file and write to temp file
+    classifyRawFile(rawFilePath, tempLabFilePath)
+
+    #Check if the labels are correct, if not, manually fix
+    try:
+        keyboard_in = input('Labels correct? [y/n]: ')
+    except EOFError:
+        print("\n\nExiting program.")
+        break
     if keyboard_in != 'y':
         print('Opening file')
-        p = subprocess.Popen(['open',labFilePath, '-a', 'Microsoft Excel']) #mac-specific
+        p = subprocess.Popen(['open',tempLabFilePath, '-a', 'Microsoft Excel']) #mac-specific
         p.wait()
         input('Press any keys to continue...')
-    print('\n')
+
+    #Move the now correct labels from the temp file to the finalize file
+    print('Writing labelled log file at: ' + labFilePath)
+    os.rename(tempLabFilePath, labFilePath)
 
     #Add newly created labels to the dictionary!
     readLabelledFile_2_wordFreqDict(labFilePath)
@@ -125,4 +137,8 @@ for rawFilePath in raw_filePaths:
     #Record read label path
     readLabelledFilePaths.add(labFilePath)
 
-    #break #TODO temp
+    print('\n') #newline for new file
+
+#Clean-up
+if os.path.exists(tempLabFilePath):
+    os.remove(tempLabFilePath)
