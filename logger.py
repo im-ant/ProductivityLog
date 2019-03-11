@@ -12,20 +12,24 @@ import os, csv, time, datetime
 ### Path of the daily log file ###
 OUTPUT_FILE = "/YOUR_CUSTOM_PATH_TO_DIRECTORY/%s_log.tsv" % datetime.datetime.now().strftime("%Y-%m-%d")
 
-### Open output stream and csv writer ###
+
+### Initialize files ###
 if not os.path.isfile(OUTPUT_FILE):
     print("Writing new file to: %s\n" % OUTPUT_FILE)
     outFile = open(OUTPUT_FILE,'w')
     outFile_writer = csv.writer(outFile, delimiter='\t', lineterminator='\n')
     outFile_writer.writerow(['Date','Time', 'Activity'])
+    outFile.close()
 else:
     print("Opening existing file at: %s\n" % OUTPUT_FILE)
-    outFile = open(OUTPUT_FILE,'a')
-    outFile_writer = csv.writer(outFile, delimiter='\t', lineterminator='\n')
 
 
 ### Iterate indefinitely ###
 while(True):
+    # Open file
+    outFile = open(OUTPUT_FILE,'a')
+    outFile_writer = csv.writer(outFile, delimiter='\t', lineterminator='\n')
+
     #Try to get user input
     try:
         keyboard_in = input('Enter activity: ')
@@ -46,11 +50,14 @@ while(True):
 
     #Write to the excel file
     outFile_writer.writerow([date_str, time_str, keyboard_in])
+    outFile.close()
 
     #Wait a bit for suspense
     time.sleep(0.2)
 
 
 ### Indicate user and Close stream ###
-print("\n\nLogger Halted. Closing file: %s" % OUTPUT_FILE)
-outFile.close()
+print("\n\nLogger Halted. File at: %s" % OUTPUT_FILE)
+# If stream is still open close it
+if not outFile.closed:
+    outFile.close()
