@@ -8,7 +8,7 @@ import numpy as np
 import ProdLogUtils as PlUtils
 
 #Path to directory containing raw log data
-RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Related/daily_logs'
+RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Ideas/daily_logs'
 #Path to directory containing labelled log data
 LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
 
