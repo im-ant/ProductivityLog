@@ -167,6 +167,9 @@ def read_extract_file(raw_df: pd.DataFrame,
                 work_dict['Activity'].append(cur_activity)
                 work_dict['StartTime'].append(cur_starttime)
                 work_dict['DurationHours'].append(cur_act_timehours)
+
+                # Reset previous activity
+                cur_activity = ""
             continue
 
         # If this is an intermediate row of a multi-row activity
