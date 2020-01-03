@@ -229,6 +229,47 @@ def filter_wanted_activity(df: pd.DataFrame, col_name='Label',
     return lab_mask
 
 
+def print_summary(df: pd.DataFrame) -> None:
+    """
+    Prints some summary statistics given a work-event DataFrame
+
+    :param df: work-event DataFrame (output of read_extract_files)
+    :return: None
+    """
+
+    # ==
+    # Filter for work above certain range
+    duration_df = df[df['DurationHours'] > 0.35]
+
+    # ==
+    # Generate values for the print summary
+    # List of dates
+    date_list = (duration_df.groupby(['Date']).sum().
+                 reset_index()['Date'].values)
+    weekday_list = [d.weekday()+1 for d in date_list]
+
+    # List of total hours per day
+    sum_list = (duration_df.groupby(['Date']).sum().
+                reset_index()['DurationHours'].values)
+
+    # List of max hour per day
+    max_list = (duration_df.groupby(['Date']).max().
+                reset_index()['DurationHours'].values)
+
+    # ==
+    # Construct and print summary
+    summary_dict = {'Date': date_list,
+                    'Weekday': weekday_list,
+                    'WorkHours_Sum': sum_list,
+                    'WorkHours_Max': max_list}
+    summary_df = pd.DataFrame.from_dict(summary_dict)
+    print('\n# ==============='
+          '\n# Summary'
+          '\n# ===============\n')
+    print(summary_df)
+
+
+
 def main(args: argparse.Namespace) -> None:
     """Main method for feature extraction"""
 
@@ -255,7 +296,7 @@ def main(args: argparse.Namespace) -> None:
         print(f'Pickling file to: {args.out_path}')
         work_df.to_pickle(args.out_path)
     else:
-        print(work_df)
+        print_summary(work_df)
 
 
 if __name__ == '__main__':
