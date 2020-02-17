@@ -1,18 +1,26 @@
 # ===========================================================================
 # Classifier to label / categorize logs
 #
+# Activity types, for reference only:
+#   0: general-purpose not working
+#   1: light work, organizing things, etc.
+#   2: intensive work, concentrated with no distraction
+#   -1: chilling and wasting time
+#
 # ===========================================================================
 import csv
 import glob
 import os
 
+from tqdm import tqdm
+
 # (Input) Path to directory containing raw log data
-#RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Ideas/daily_logs'
-RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/raw_log_dir'
+RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Ideas/daily_logs'
+#RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/raw_log_dir' # TODO testing delete
 
 # (Output) Path to directory containing labelled log data
-#LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
-LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/lab_log_dir'
+LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
+#LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/lab_log_dir' # TODO testing delete
 
 # (Reference only, not used)
 # Label category mapping {index is array index - label name}
@@ -25,7 +33,7 @@ LABELIDX_COL_IDX = 3
 
 
 # ===
-def checkRawFileLabelled(raw_file_path):
+def checkRawFileLabelled(raw_file_path: str) -> bool:
     """
     Function that checks if a log file is correctly manually labelled
     I.e. the "activities" column should start with "[z]" (z replaceable by
@@ -60,7 +68,8 @@ def checkRawFileLabelled(raw_file_path):
 
 
 # ===
-def classifyLabelledRawFile(raw_file_path, out_labelled_file_path):
+def classifyLabelledRawFile(raw_file_path: str,
+                            out_labelled_file_path: str) -> None:
     """
     Function that classifies a manually labelled raw log file
 
@@ -101,7 +110,7 @@ def classifyLabelledRawFile(raw_file_path, out_labelled_file_path):
 
 
 # ===
-def main():
+def main() -> None:
     """
     Main method to run the script
     """
@@ -115,7 +124,7 @@ def main():
 
     # Keep track of which files are labelled
     print("Loading previously labelled files... ")
-    for labFilePath in lab_filePaths:
+    for labFilePath in tqdm(lab_filePaths):
         readLabelledFilePaths.add(labFilePath)
 
     # Metrics output
@@ -125,7 +134,7 @@ def main():
 
     # Read the raw files, automatically classify
     numLabelled = 0
-    for rawFilePath in raw_filePaths:
+    for rawFilePath in tqdm(raw_filePaths):
         # Create final labelled log file name
         labFileName = "labelled_" + rawFilePath.split('/')[-1]
         labFilePath = os.path.join(LABELLED_LOG_DIR_PATH,labFileName)
