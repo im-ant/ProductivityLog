@@ -75,8 +75,8 @@ def get_file_list(dir_path: str, date_ranges: Tuple[datetime.date]
     return file_dict
 
 
-def read_extract_files(file_dict: Mapping[datetime.date, str]
-                       ) -> pd.DataFrame:
+def read_extract_files(file_dict: Mapping[datetime.date, str],
+                       label_include=2, label_gap=1) -> pd.DataFrame:
     """
     Read a dictionary of file dates -> paths, generate a Pandas DataFrame which
     summarizes over the working hours of those logs
@@ -111,7 +111,9 @@ def read_extract_files(file_dict: Mapping[datetime.date, str]
 
         # Format record
         cur_raw_df = pd.read_csv(file_dict[cur_iter_day], delimiter='\t')
-        cur_day_df = read_extract_file(cur_raw_df, cur_iter_day)
+        cur_day_df = read_extract_file(cur_raw_df, cur_iter_day,
+                                       label_include=label_include,
+                                       label_gap=label_gap)
 
         # Append to DataFrame
         work_df = pd.concat([work_df, cur_day_df])
@@ -123,7 +125,8 @@ def read_extract_files(file_dict: Mapping[datetime.date, str]
 
 
 def read_extract_file(raw_df: pd.DataFrame,
-                      file_date: datetime.date) -> pd.DataFrame:
+                      file_date: datetime.date,
+                      label_include=2, label_gap=1) -> pd.DataFrame:
     """
     The MAIN method to filter a single daily log (as a pd.DataFrame) into a
     feature-extracted output df, with the header columns specified by
@@ -140,7 +143,8 @@ def read_extract_file(raw_df: pd.DataFrame,
     # ==
     # Get the mask of activity (labels) we want to filter for
     act_mask = filter_wanted_activity(raw_df, col_name='Label',
-                                      label_include=2, label_gap=1)
+                                      label_include=label_include,
+                                      label_gap=label_gap)
 
     # ==
     # Extract the activities we want to filter for
@@ -229,7 +233,7 @@ def filter_wanted_activity(df: pd.DataFrame, col_name='Label',
     return lab_mask
 
 
-def print_summary(df: pd.DataFrame) -> None:
+def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
     """
     Prints some summary statistics given a work-event DataFrame
 
@@ -239,10 +243,10 @@ def print_summary(df: pd.DataFrame) -> None:
 
     # ==
     # Filter for work above certain range
-    duration_df = df[df['DurationHours'] > 0.35]
+    duration_df = work_df[work_df['DurationHours'] > 0.35]
 
     # ==
-    # Generate values for the print summary
+    # Generate work values for the print summary
     # List of dates
     date_list = (duration_df.groupby(['Date']).sum().
                  reset_index()['Date'].values)
@@ -256,17 +260,43 @@ def print_summary(df: pd.DataFrame) -> None:
     max_list = (duration_df.groupby(['Date']).max().
                 reset_index()['DurationHours'].values)
 
-    # ==
-    # Construct and print summary
+    ## Construct the work summed DataFrame
     summary_dict = {'Date': date_list,
                     'Weekday': weekday_list,
-                    'WorkHours_Sum': sum_list,
-                    'WorkHours_Max': max_list}
+                    'WorkHours_Max': max_list,
+                    'WorkHours_Sum': sum_list}
     summary_df = pd.DataFrame.from_dict(summary_dict)
+
+    # ==
+    # Generate waste hour values for the print summary
+    if waste_df is not None:
+        # Extract dates and total wasted hours
+        waste_date_list = (waste_df.groupby(['Date']).sum().
+                           reset_index()['Date'].values)
+        waste_weekday_list = [d_.weekday()+1 for d_ in waste_date_list]
+        sum_waste = (waste_df.groupby(['Date']).sum().
+                     reset_index()['DurationHours'].values)
+
+        # Construct the wasted timme DataFrame 
+        waste_sum_dict = {'Date': waste_date_list,
+                          'Weekday': waste_weekday_list,
+                          'WasteHours_Sum': sum_waste}
+        waste_sum_df = pd.DataFrame.from_dict(waste_sum_dict)
+
+        # Merge the two dataframes based on dates
+        summary_df = summary_df.merge(waste_sum_df, on=['Date', 'Weekday'],
+                                      how='outer')
+
+
+    # ==
+    # Sort and print summary
+    summary_df = summary_df.sort_values('Date')
+
     print('\n# ==============='
           '\n# Summary'
           '\n# ===============\n')
     print(summary_df)
+
 
 
 
@@ -288,15 +318,17 @@ def main(args: argparse.Namespace) -> None:
 
     # ==
     # Read the list of files and extract features from each
-    work_df = read_extract_files(file_dict)
+    work_df = read_extract_files(file_dict, label_include=2, label_gap=1)
+    waste_df = read_extract_files(file_dict, label_include=-1, label_gap=-1)
 
     # ==
     # Save the DataFrame
     if args.out_path.endswith('.pkl'):
-        print(f'Pickling file to: {args.out_path}')
+        print(f'Pickling work hour file to: {args.out_path}')
         work_df.to_pickle(args.out_path)
+        # TODO also save the waste df file
     else:
-        print_summary(work_df)
+        print_summary(work_df=work_df, waste_df=waste_df)
 
 
 if __name__ == '__main__':
