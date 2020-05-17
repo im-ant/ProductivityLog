@@ -13,6 +13,8 @@ import os
 from typing import List, Tuple, Mapping
 
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 WORK_DF_COLS = ['Date', 'Weekday', 'Activity', 'StartTime', 'DurationHours']
 
@@ -277,7 +279,7 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
         sum_waste = (waste_df.groupby(['Date']).sum().
                      reset_index()['DurationHours'].values)
 
-        # Construct the wasted timme DataFrame 
+        # Construct the wasted timme DataFrame
         waste_sum_dict = {'Date': waste_date_list,
                           'Weekday': waste_weekday_list,
                           'WasteHours_Sum': sum_waste}
@@ -291,11 +293,30 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
     # ==
     # Sort and print summary
     summary_df = summary_df.sort_values('Date')
+    summary_df.fillna(0.0, inplace=True)
 
     print('\n# ==============='
           '\n# Summary'
           '\n# ===============\n')
     print(summary_df)
+
+    # ==
+    # Visualize
+
+    # Get the date(weekday) x labels
+    x_cal_day = summary_df['Date'].values
+    x_weekday = summary_df['Weekday'].values
+    x_lab = [f'{x_cal_day[i]} ({x_weekday[i]})' for i in range(len(x_cal_day))]
+    # Plot
+    sns.lineplot(x=x_lab, y='WorkHours_Sum', data=summary_df)
+    sns.lineplot(x=x_lab, y='WasteHours_Sum', data=summary_df)
+    # Other stuff
+    plt.xticks(rotation=80)
+    plt.xlabel('Day')
+    plt.ylabel('Duration (hours)')
+    plt.legend(['Work', 'Wasted'])
+
+    plt.show()
 
 
 
