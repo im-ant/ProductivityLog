@@ -15,12 +15,10 @@ import os
 from tqdm import tqdm
 
 # (Input) Path to directory containing raw log data
-RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Ideas/daily_logs'
-#RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/raw_log_dir' # TODO testing delete
+RAW_LOG_DIR_PATH = 'INPUT_RAW_DIR/daily_logs'
 
 # (Output) Path to directory containing labelled log data
-LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
-#LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/testing_dir/lab_log_dir' # TODO testing delete
+LABELLED_LOG_DIR_PATH = 'OUTPUT_LABELLED_DIR/labelled_logs'
 
 # (Reference only, not used)
 # Label category mapping {index is array index - label name}
