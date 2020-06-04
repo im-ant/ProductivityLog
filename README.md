@@ -13,7 +13,7 @@ Things to help analyze workflow and productive hours.
 
 ## Usage example
 
-#### S1: Logging
+### S1: Logging
 **S1.1**
 Each day before you start work, enter:
 ```sh
@@ -50,7 +50,7 @@ A side note is that I use different numbering schemes to categorize the "intensi
 | `[-1]`  | very meaningless activities (e.g. mindless web surfing)     |
 
 
-#### S2: Activity labelling
+### S2: Activity labelling
 
 **S2.1**
 After the **log file** has been written, generate the **labelled files** in a different directory (which contains each activity but with the label added). The below script just uses the manually specified labels (see table above):
@@ -66,7 +66,7 @@ Where `RAW_LOG_DIR_PATH` specifies where directory containing **log file** is, a
 You can also use fancier methods to classify things (e.g. Naive Bayes classifier using word frequency [here](https://github.com/im-ant/ProductivityLog/blob/master/src/classifier.py)), but I opted for simplicity in the end.
 
 
-#### S3: Analyzing activity
+### S3: Analyzing activity
 
 You can run whatever analysis on your logged activites. Personally, I run the following:
 
