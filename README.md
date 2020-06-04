@@ -30,7 +30,7 @@ The above will start the script and initialize the file. Simply type into the te
 Writing new file to: /Users/anthony/Google_Drive/Life_Ideas/daily_logs/2020-06-04_log.tsv
 
 Enter activity: [2] working on coding up productivity tools
-10:02:10	    [2] working on coding up productivity tools
+10:02:10	[2] working on coding up productivity tools
 
 Enter activity:
 ```
