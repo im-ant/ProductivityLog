@@ -1,6 +1,7 @@
 # ===========================================================================
 # Classifier to label / categorize logs
 #
+# DEPRECATED (Feb 17, 2020)
 # ===========================================================================
 import os, glob
 import csv, subprocess
@@ -8,9 +9,9 @@ import numpy as np
 import ProdLogUtils as PlUtils
 
 #Path to directory containing raw log data
-RAW_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Life_Related/daily_logs'
+RAW_LOG_DIR_PATH = '/INPUT_PATH/daily_logs'
 #Path to directory containing labelled log data
-LABELLED_LOG_DIR_PATH = '/Users/anthony/Google_Drive/Git_Projects/ProductivityLog/labelled_logs'
+LABELLED_LOG_DIR_PATH = '/OUTPUT_PATH/labelled_logs'
 
 #Name of the temporary file generated during auto-classification
 TEMP_LAB_FILE_NAME = "tempLabelledFile_randomNum31415926.tsv"
