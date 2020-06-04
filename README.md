@@ -36,11 +36,11 @@ Enter activity:
 ```
 
 **S1.3**
-After you are done, simply press `ctrl+D` to exit. You can also use `ctrl+C` aytime to cancel the current "entry loop" (behind the hood it is just an infinite for loop, each loop waits for the user to enter data).
+After you are done, simply press `ctrl+D` to exit. You can also use `ctrl+C` anytime to cancel the current "entry loop" (under the hood it is just an infinite for loop, each loop waits for the user to enter data).
 
 
 **S1.appendix**
-A side note is that I use different numbering schemes to categorize the "intensity" of work. This can be specified by simplying entering a number in square brackets (`[?]`) before entering the activity. I use the following numbering scheme (but you do not have to follow it):
+A side note is that I use different numbering schemes to categorize the "intensity" of work. This can be specified by simplying entering a number in square brackets (`[?]`) before entering the activity. I use the following numbering scheme (you can use the same categories or invent your own):
 
 | Number  | Work type                                                   |
 | --------|:-----------------------------------------------------------:|
@@ -53,7 +53,7 @@ A side note is that I use different numbering schemes to categorize the "intensi
 #### S2: Activity labelling
 
 **S2.1**
-After the **log file** has been generated, we organize it by categorizing its activity to generate the **labelled files** directory. The below script just uses the manually specified labels (see table above):
+After the **log file** has been written, generate the **labelled files** in a different directory (which contains each activity but with the label added). The below script just uses the manually specified labels (see table above):
 
 ```sh
 python src/hardcoded_classifier.py
@@ -95,7 +95,7 @@ To make things easier, I also have a `.sh` script to do the above quickly:
 ```sh
 bash src/quick_summary.sh
 ```
-which does the same thing but with the `--in-dir` hard-coded and `--date-range` set to the past 3 weeks from today.
+which does the same thing but with the `--in-dir` hard-coded and `--date-range` set to the past 3 weeks.
 
 
 
