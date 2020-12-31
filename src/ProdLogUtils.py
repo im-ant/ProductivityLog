@@ -1,6 +1,9 @@
 # ===========================================================================
 # Utiliy helper functions to help with the productivity logging pipeline
 #
+# NOTE: This was all done a long time ago to help with classifying
+#       the logs. Likely not useful anymore.
+#
 # Assumptions is that labels are simply integers starting from 0, 1, ...
 # ===========================================================================
 
