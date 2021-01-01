@@ -78,7 +78,8 @@ def get_file_list(dir_path: str, date_ranges: Tuple[datetime.date]
 
 
 def read_extract_files(file_dict: Mapping[datetime.date, str],
-                       label_include=2, label_gap=1) -> pd.DataFrame:
+                       label_include=2, label_gap=1,
+                       verbosity=1) -> pd.DataFrame:
     """
     Read a dictionary of file dates -> paths, generate a Pandas DataFrame which
     summarizes over the working hours of those logs
@@ -98,8 +99,8 @@ def read_extract_files(file_dict: Mapping[datetime.date, str],
 
     # Iterate
     while cur_iter_day <= final_iter_day:
-        #
-        print(cur_iter_day)
+        if verbosity > 0:
+            print(cur_iter_day)
 
         # ==
         # If no record exists for this day
@@ -252,7 +253,7 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
     # List of dates
     date_list = (duration_df.groupby(['Date']).sum().
                  reset_index()['Date'].values)
-    weekday_list = [d.weekday()+1 for d in date_list]
+    weekday_list = [d.weekday() + 1 for d in date_list]
 
     # List of total hours per day
     sum_list = (duration_df.groupby(['Date']).sum().
@@ -275,7 +276,7 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
         # Extract dates and total wasted hours
         waste_date_list = (waste_df.groupby(['Date']).sum().
                            reset_index()['Date'].values)
-        waste_weekday_list = [d_.weekday()+1 for d_ in waste_date_list]
+        waste_weekday_list = [d_.weekday() + 1 for d_ in waste_date_list]
         sum_waste = (waste_df.groupby(['Date']).sum().
                      reset_index()['DurationHours'].values)
 
@@ -288,7 +289,6 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
         # Merge the two dataframes based on dates
         summary_df = summary_df.merge(waste_sum_df, on=['Date', 'Weekday'],
                                       how='outer')
-
 
     # ==
     # Sort and print summary
@@ -317,8 +317,6 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
     plt.legend(['Work', 'Wasted'])
 
     plt.show()
-
-
 
 
 def main(args: argparse.Namespace) -> None:
