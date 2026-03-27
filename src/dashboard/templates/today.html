@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Today - Productivity Dashboard{% endblock %}
+{% block content %}
+<h2>{{ date.strftime('%A, %B %d, %Y') }}</h2>
+
+{% if has_data %}
+<div class="stats-row">
+    <div class="stat-card stat-deep">
+        <div class="value">{{ "%.1f"|format(stats.get('deep_work', 0)) }}h</div>
+        <div class="label">Deep Work</div>
+    </div>
+    <div class="stat-card stat-light">
+        <div class="value">{{ "%.1f"|format(stats.get('light_work', 0)) }}h</div>
+        <div class="label">Light Work</div>
+    </div>
+    <div class="stat-card stat-wasted">
+        <div class="value">{{ "%.1f"|format(stats.get('wasted', 0)) }}h</div>
+        <div class="label">Wasted</div>
+    </div>
+</div>
+
+<div class="card">
+    <div id="bar-chart"></div>
+</div>
+<div class="card">
+    <div id="timeline-chart"></div>
+</div>
+
+<script>
+    var barData = {{ bar_json|safe }};
+    var timelineData = {{ timeline_json|safe }};
+    if (barData) Plotly.newPlot('bar-chart', barData.data, barData.layout, {responsive: true});
+    if (timelineData) Plotly.newPlot('timeline-chart', timelineData.data, timelineData.layout, {responsive: true});
+</script>
+{% else %}
+<div class="no-data">No log data for today yet.</div>
+{% endif %}
+{% endblock %}

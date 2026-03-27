@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Date Range - Productivity Dashboard{% endblock %}
+{% block content %}
+<h2>Date Range View</h2>
+
+<div class="card">
+    <form method="get" action="/range" class="form-row">
+        <label>Start:</label>
+        <input type="date" name="start" value="{{ start }}">
+        <label>End:</label>
+        <input type="date" name="end" value="{{ end }}">
+        <button type="submit">Update</button>
+    </form>
+</div>
+
+{% if has_data %}
+<div class="card">
+    <div id="stacked-bar"></div>
+</div>
+<div class="card">
+    <div id="trend-lines"></div>
+</div>
+
+<script>
+    var barData = {{ bar_json|safe }};
+    var trendData = {{ trend_json|safe }};
+    if (barData) Plotly.newPlot('stacked-bar', barData.data, barData.layout, {responsive: true});
+    if (trendData) Plotly.newPlot('trend-lines', trendData.data, trendData.layout, {responsive: true});
+</script>
+{% else %}
+<div class="no-data">No data for the selected date range.</div>
+{% endif %}
+{% endblock %}

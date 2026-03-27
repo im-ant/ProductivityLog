@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Summary - Productivity Dashboard{% endblock %}
+{% block content %}
+<h2>Summary</h2>
+
+<div class="card">
+    <form method="get" action="/summary" class="form-row">
+        <label>Start:</label>
+        <input type="date" name="start" value="{{ start }}">
+        <label>End:</label>
+        <input type="date" name="end" value="{{ end }}">
+        <button type="submit">Update</button>
+    </form>
+</div>
+
+{% if has_data %}
+<div class="stats-row">
+    <div class="stat-card stat-deep">
+        <div class="value">{{ "%.1f"|format(stats.get('deep_work', {}).get('avg', 0)) }}h</div>
+        <div class="label">Deep Work / day</div>
+    </div>
+    <div class="stat-card stat-light">
+        <div class="value">{{ "%.1f"|format(stats.get('light_work', {}).get('avg', 0)) }}h</div>
+        <div class="label">Light Work / day</div>
+    </div>
+    <div class="stat-card stat-wasted">
+        <div class="value">{{ "%.1f"|format(stats.get('wasted', {}).get('avg', 0)) }}h</div>
+        <div class="label">Wasted / day</div>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card">
+        <div class="value">{{ num_days }}</div>
+        <div class="label">Days Tracked</div>
+    </div>
+    {% for act_type in ['deep_work', 'light_work', 'wasted'] %}
+    {% if act_type in stats %}
+    <div class="stat-card">
+        <div class="value">{{ "%.0f"|format(stats[act_type].total) }}h</div>
+        <div class="label">Total {{ act_type|replace('_', ' ')|title }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<div class="card">
+    <div id="pie-chart"></div>
+</div>
+
+<script>
+    var pieData = {{ pie_json|safe }};
+    if (pieData) Plotly.newPlot('pie-chart', pieData.data, pieData.layout, {responsive: true});
+</script>
+{% else %}
+<div class="no-data">No data for the selected date range.</div>
+{% endif %}
+{% endblock %}

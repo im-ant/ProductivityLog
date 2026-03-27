@@ -2,3 +2,7 @@ labelled_logs
 testing_dir
 .ipynb_checkpoints/
 __pycache__/
+.venv/
+.idea/
+*.un~
+tempOut.tsv

@@ -12,6 +12,7 @@ import glob
 import os
 from typing import List, Tuple, Mapping
 
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -236,9 +237,11 @@ def filter_wanted_activity(df: pd.DataFrame, col_name='Label',
     return lab_mask
 
 
-def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
+def print_summary_old(work_df: pd.DataFrame, waste_df=None) -> None:
     """
     Prints some summary statistics given a work-event DataFrame
+    NOTE: this was the older method, used before July 9, 2022
+    TODO: delete this method after the new method is done
 
     :param df: work-event DataFrame (output of read_extract_files)
     :return: None
@@ -319,6 +322,73 @@ def print_summary(work_df: pd.DataFrame, waste_df=None) -> None:
     plt.show()
 
 
+def print_summary(df: pd.DataFrame) -> None:
+    """
+    Prints some summary statistics given a work-event DataFrame
+
+    :param df: work-event DataFrame
+    :return: None
+    """
+
+    # Aggregate
+    gbcols = ['Calendar_Week_Day', 'Activity_Type']
+    agg_df_byday = df.groupby(gbcols).agg(
+        sum_duration=('DurationHours', 'sum'),
+        mean_duration=('DurationHours', 'mean'),
+        max_duration=('DurationHours', 'max'),
+        weekday=('Weekday', 'first'),
+        calendar_date=('Date', 'first'),
+    )
+
+    summary_df = agg_df_byday.reset_index(drop=False)
+    summary_df = summary_df.sort_values(['calendar_date', 'Activity_Type'])
+    summary_df.fillna(0.0, inplace=True)
+
+    # Compute total time over this whole period
+    gbcols = ['Activity_Type']
+    agg_df_total = df.groupby(gbcols).sum()
+    agg_df_total = agg_df_total.reset_index(drop=False)
+
+
+
+    print('\n# ==============='
+          '\n# Summary'
+          '\n# ===============\n')
+    print(summary_df)
+
+
+
+    # ==
+    # Visualize and plot
+    ordered_hue = ['deep_work', 'light_work', 'wasted']
+    ordered_cols = ['tab:blue', 'tab:green', 'tab:red']
+    palette_dict = {h:c for h, c in zip(ordered_hue, ordered_cols)}
+
+    fig, axes = plt.subplots(1, 2, gridspec_kw={'width_ratios': [2, 1]})
+
+    # Barplot
+    sns.barplot(x='Calendar_Week_Day', y='sum_duration', hue='Activity_Type',
+                ax=axes[0], palette=palette_dict, hue_order=ordered_hue,
+                alpha=0.8,
+                data=summary_df)
+    plt.setp(axes[0].xaxis.get_majorticklabels(), rotation=80)
+
+    # Pie plot of aggregate
+    durations_list = agg_df_total['DurationHours'].values
+    activites_list = agg_df_total['Activity_Type'].values
+    colors_list = [palette_dict[act] for act in activites_list]
+    pctfunc = lambda pct, vals: f'{pct:.1f}%\n{(pct/100.*sum(vals)):.1f} hours'
+    axes[1].pie(durations_list, labels=activites_list,
+                autopct=lambda pct: pctfunc(pct, durations_list),
+                colors=colors_list)
+
+    #plt.xticks(rotation=80)
+    #plt.xlabel('Day')
+    #plt.ylabel('Duration (hours)')
+    plt.tight_layout()
+    plt.show()
+
+
 def main(args: argparse.Namespace) -> None:
     """Main method for feature extraction"""
 
@@ -337,8 +407,25 @@ def main(args: argparse.Namespace) -> None:
 
     # ==
     # Read the list of files and extract features from each
-    work_df = read_extract_files(file_dict, label_include=2, label_gap=1)
-    waste_df = read_extract_files(file_dict, label_include=-1, label_gap=-1)
+    # NOTE: old deep work: read_extract_files(file_dict, label_include=2, label_gap=1)
+    dfs = {
+        'deep_work': read_extract_files(file_dict, label_include=2, label_gap=2),
+        'light_work': read_extract_files(file_dict, label_include=1, label_gap=1),
+        'wasted': read_extract_files(file_dict, label_include=-1, label_gap=-1)
+    }
+
+    # Concatenate all into a single df
+    df_list = []
+    for k in dfs:
+        cur_df = dfs[k]
+        cur_df['Activity_Type'] = [k] * len(cur_df)
+        df_list.append(cur_df)
+    all_df = pd.concat(df_list)
+
+    all_df['Calendar_Week_Day'] = [
+        f'{cal_day} ({week_day})' for (cal_day, week_day)
+        in zip(all_df['Date'], all_df['Weekday'])
+    ]
 
     # ==
     # Save the DataFrame
@@ -347,7 +434,7 @@ def main(args: argparse.Namespace) -> None:
         work_df.to_pickle(args.out_path)
         # TODO also save the waste df file
     else:
-        print_summary(work_df=work_df, waste_df=waste_df)
+        print_summary(all_df)
 
 
 if __name__ == '__main__':

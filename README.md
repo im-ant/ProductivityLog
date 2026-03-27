@@ -103,6 +103,53 @@ which does the same thing but with the `--in-dir` hard-coded and `--date-range` 
 
 
 
+## Dashboard
+
+A local Flask web dashboard for exploring productivity data interactively, replacing the `quick_summary.sh` workflow. Reads raw logs directly (no need to run `hardcoded_classifier.py` first).
+
+### Setup (one-time)
+
+```sh
+# Install uv if you don't have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install dependencies
+make sync
+```
+
+### Running
+
+```sh
+# Development mode (foreground, auto-reloads on code changes)
+make dev
+
+# Then open http://localhost:5050
+```
+
+### Pages
+
+| URL | Description |
+|-----|-------------|
+| `/today` | Today's activity breakdown + session timeline |
+| `/range` | Stacked bar chart + 7-day rolling averages (default: past 18 days) |
+| `/summary` | Pie chart + aggregate stats over a date range |
+| `/api/today` | JSON endpoint for today's stats |
+
+### Running as a background service (optional)
+
+```sh
+make install    # register with launchd (auto-starts on login, survives reboot)
+make status     # check if running
+make stop       # stop the service
+make uninstall  # remove from launchd
+make logs       # tail service logs
+```
+
+### Waste monitor
+
+A background thread polls today's log every 5 minutes. When wasted time (`[-1]`) exceeds 1.5 hours, a macOS notification is sent (once per day).
+
+
 ## Scripts and Functionalities
 (**Outdated section**)
 
